@@ -1,0 +1,38 @@
+# Setting profiles below ensures that the service is not run by default
+version: "3"
+
+x-coalesce-common: &coalesce-common
+    image: coalesce:latest
+    build: .
+    environment:
+        COALESCE_UPSTREAM_API_URLS: http://test-api:5000/api/1,http://test-api:5000/api/2,http://test-api:5000/api/3
+
+services:
+    api:
+        <<: *coalesce-common
+        command: ["uvicorn", "coalesce.api:api", "--host", "0.0.0.0", "--port", "8080"]
+        ports:
+            - 8080:8080
+
+    test-api:
+        <<: *coalesce-common
+        command: ["uvicorn", "tests.api:api", "--host", "0.0.0.0", "--port", "5000"]
+        ports:
+            - 5000:5000
+        volumes:
+            - ./tests:/opt/tests
+
+    test:
+        <<: *coalesce-common
+        command: ["pytest", "-v"]
+        profiles: ["test"]
+        volumes:
+            - ./tests/:/opt/tests
+            - ./conftest.py/:/opt/conftest.py
+
+    develop:
+        <<: *coalesce-common
+        command: ["bash"]
+        profiles: ["develop"]
+        volumes:
+            - ./:/opt

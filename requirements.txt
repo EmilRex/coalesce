@@ -1,0 +1,7 @@
+aiohttp
+fastapi
+flake8
+pydantic
+pytest
+requests
+uvicorn
